@@ -4,15 +4,18 @@ import (
 	"database/sql"
 	"log"
 	"os"
+	"time"
 
 	"github.com/SauravNaruka/gator/internal/config"
 	"github.com/SauravNaruka/gator/internal/database"
+	"github.com/SauravNaruka/gator/internal/gatorapi"
 	_ "github.com/lib/pq"
 )
 
 type state struct {
-	db  *database.Queries
-	cfg *config.Config
+	db             *database.Queries
+	cfg            *config.Config
+	gatorapiClient *gatorapi.Client
 }
 
 func main() {
@@ -29,9 +32,12 @@ func main() {
 
 	dbQueries := database.New(db)
 
+	gatorapiClient := gatorapi.NewClient(5 * time.Second)
+
 	programState := &state{
-		db:  dbQueries,
-		cfg: &cfg,
+		db:             dbQueries,
+		cfg:            &cfg,
+		gatorapiClient: gatorapiClient,
 	}
 
 	cmds := commands{
@@ -41,6 +47,7 @@ func main() {
 	cmds.register("register", handlerRegister)
 	cmds.register("reset", handlerReset)
 	cmds.register("users", handlerListUsers)
+	cmds.register("agg", handlerAgg)
 
 	if len(os.Args) < 2 {
 		log.Fatal("Usage: cli <command> [args...]")
