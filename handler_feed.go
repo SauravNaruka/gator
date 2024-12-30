@@ -22,28 +22,34 @@ func handlerAddFeed(s *state, cmd command) error {
 	name := cmd.Args[0]
 	url := cmd.Args[1]
 
-	// feed, err := s.gatorapiClient.FetchFeed(context.Background(), url)
-	// if err != nil {
-	// 	return fmt.Errorf("couldn't fetch feed: %w", err)
-	// }
-
-	args := database.CreateFeedParams{
+	feed, err := s.db.CreateFeed(context.Background(), database.CreateFeedParams{
 		ID:        uuid.New(),
 		Name:      name,
 		Url:       url,
 		UserID:    user.ID,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
-	}
-
-	feed, err := s.db.CreateFeed(context.Background(), args)
+	})
 	if err != nil {
 		return fmt.Errorf("couldn't create feed: %w", err)
+	}
+
+	feedFollow, err := s.db.CreateFeedFollow(context.Background(), database.CreateFeedFollowParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		FeedID:    feed.ID,
+		UserID:    user.ID,
+	})
+	if err != nil {
+		return fmt.Errorf("couldn't create feed follow: %w", err)
 	}
 
 	fmt.Println("Feed created successfully:")
 	printFeed(feed, user)
 	fmt.Println()
+	fmt.Println("Feed followed successfully:")
+	printFeedFollow(feedFollow.UserName, feedFollow.FeedName)
 	fmt.Println("=====================================")
 
 	return nil
