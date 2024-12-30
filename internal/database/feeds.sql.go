@@ -135,7 +135,7 @@ const markFeedFetched = `-- name: MarkFeedFetched :one
 UPDATE feeds
 SET 
     last_fetched_at = NOW(),
-    updated_at = NOW
+    updated_at = NOW()
 WHERE id = $1
 RETURNING id, created_at, updated_at, name, url, user_id, last_fetched_at
 `
